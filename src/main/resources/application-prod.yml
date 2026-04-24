@@ -1,0 +1,40 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+wecom:
+  corp-id: ${WECOM_CORP_ID}
+  token: ${WECOM_TOKEN}
+  aes-key: ${WECOM_AES_KEY}
+  secret: ${WECOM_SECRET}
+  kf-account-id: ${WECOM_KF_ACCOUNT_ID}
+
+ai:
+  base-url: ${AI_BASE_URL:https://api.minimax.io/v1/chat/completions}
+  api-key: ${AI_API_KEY}
+  model: ${AI_MODEL:MiniMax-M2.7}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/wechat_kf_bot?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: ${SPRING_DATA_REDIS_DATABASE:0}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      timeout: ${SPRING_DATA_REDIS_TIMEOUT:3s}
+  sql:
+    init:
+      mode: ${SPRING_SQL_INIT_MODE:always}
+      schema-locations: classpath:db/schema-mysql.sql
+      continue-on-error: false
+
+persistence:
+  jdbc:
+    enabled: ${PERSISTENCE_JDBC_ENABLED:true}
+
+redis-cache:
+  enabled: ${REDIS_CACHE_ENABLED:true}

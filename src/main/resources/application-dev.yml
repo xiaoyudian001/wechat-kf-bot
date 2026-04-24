@@ -1,0 +1,36 @@
+wecom:
+  corp-id: your_corp_id
+  token: your_callback_token
+  aes-key: your_encoding_aes_key
+  secret: your_wechat_kf_secret
+  kf-account-id: your_open_kfid
+
+ai:
+  base-url: https://api.minimax.io/v1/chat/completions
+  api-key: sk-cp-cKTsiPpPAHtfhVlGpr1Mg434DoP4PYyZeHyFcrW0YlJplnd_klCFHTDJQeNnxyjFByjRy2GkqEnxNpS1QLENRNd1AH4wCNfg4Q-VQEBZfb6bapNpmm3jQrA
+  model: MiniMax-M2.7
+
+persistence:
+  jdbc:
+    enabled: true
+
+redis-cache:
+  enabled: true
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/wechat_kf_bot?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 3s
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema-mysql.sql
+      continue-on-error: false

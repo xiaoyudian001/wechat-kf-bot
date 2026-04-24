@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  sql:
+    init:
+      mode: never
+
+wecom:
+  corp-id: your_corp_id
+  token: your_callback_token
+  aes-key: your_encoding_aes_key
+  secret: your_wechat_kf_secret
+  kf-account-id: your_open_kfid
+
+ai:
+  base-url: https://api.minimax.io/v1/chat/completions
+  api-key: your_api_key
+  model: MiniMax-M2.7
+  faq-path: faq.txt
+  faq-json-path: faq.json
+  system-prompt: |
+    你是民宿微信客服助理。
+    你的职责是礼貌、简洁、自然地回答住客咨询。
+    你不能编造信息。
+    如果涉及退款、赔偿、投诉、差评、改房、改价、取消订单、平台纠纷，统一转人工。
+    如果涉及订单但信息不足，请要求客户提供预订姓名、手机号后四位和入住日期。
+    回答尽量控制在1到4句话。
+    不要输出分析过程，只输出最终给客户看的内容。
+
+http:
+  client:
+    connect-timeout-ms: 3000
+    read-timeout-ms: 10000
+
+callback:
+  dedupe-ttl-minutes: 10
+
+redis-cache:
+  enabled: false
+  key-prefix: wechat-kf-bot
+  token-ttl-buffer-seconds: 120
+  callback-dedupe-ttl-minutes: 10
+  conversation-ttl-hours: 24
+
+knife4j:
+  enable: true
+
+persistence:
+  jdbc:
+    enabled: false
+
+logging:
+  pattern:
+    level: traceId:%X{traceId:-} %5p
+  level:
+    root: INFO
+    com.example.wechatbot: INFO

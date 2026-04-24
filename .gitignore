@@ -1,0 +1,12 @@
+target/
+.idea/
+*.iml
+*.log
+logs/
+
+.env
+application-local.yml
+
+frontend/node_modules/
+frontend/.npm-cache/
+frontend/dist/
