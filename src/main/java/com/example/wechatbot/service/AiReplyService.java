@@ -26,12 +26,6 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-/**
- * 描述：负责根据规则、FAQ 和大模型生成最终客服回复。
- *
- * @author wangjw
- * @date 2026-04-24
- */
 public class AiReplyService {
 
     private static final Set<String> SUPPORTED_MESSAGE_ROLES = Set.of("system", "user", "assistant");
@@ -45,12 +39,6 @@ public class AiReplyService {
     private final FaqMatchService faqMatchService;
     private final RestTemplate restTemplate;
 
-    /**
-     * 描述：根据用户文本生成回复决策。
-     *
-     * @author wangjw
-     * @date 2026-04-24
-     */
     public ReplyDecision generateReply(String externalUserId, String userText) {
         if (sensitiveRuleService.shouldHandoff(userText)) {
             return new ReplyDecision(ReplyRoute.SENSITIVE_HANDOFF, sensitiveRuleService.handoffReply());
@@ -66,6 +54,14 @@ public class AiReplyService {
         Optional<String> faqAnswer = faqMatchService.match(userText);
         if (faqAnswer.isPresent()) {
             return new ReplyDecision(ReplyRoute.FAQ_MATCH, faqAnswer.get());
+        }
+
+        if (isApiKeyMissing(aiProperties.getApiKey())) {
+            log.error("ai_reply_missing_api_key baseUrl={}, model={}, apiKey={}",
+                    aiProperties.getBaseUrl(),
+                    aiProperties.getModel(),
+                    maskApiKey(aiProperties.getApiKey()));
+            return new ReplyDecision(ReplyRoute.FALLBACK_HANDOFF, sensitiveRuleService.handoffReply());
         }
 
         OpenAiChatRequest request = new OpenAiChatRequest();
@@ -162,7 +158,8 @@ public class AiReplyService {
 
         String faqContent = StringUtils.trimToEmpty(knowledgeService.getFaqContent());
         if (StringUtils.isNotBlank(faqContent)) {
-            builder.append("\n\n以下是民宿知识库，请优先依据这些信息回答。如果知识库没有明确说明，不要编造。\n\n");
+            builder.append("\n\n以下是民宿知识库。民宿自身政策、订单、价格、房态等确定性问题请优先依据知识库回答；");
+            builder.append("如果用户咨询周边游玩、餐饮、交通等旅行建议，知识库没有明确说明时，也可以基于用户给出的地点提供通用推荐，并提醒实时信息以地图、景区或平台页面为准。\n\n");
             builder.append(faqContent);
         }
         return builder.toString();
@@ -175,12 +172,6 @@ public class AiReplyService {
         messages.add(new OpenAiChatRequest.Message(role, content.trim()));
     }
 
-    /**
-     * 描述：截断日志中的长文本内容。
-     *
-     * @author wangjw
-     * @date 2026-04-24
-     */
     private String abbreviate(String value) {
         return StringUtils.abbreviate(StringUtils.defaultString(value), 1000);
     }
@@ -189,18 +180,23 @@ public class AiReplyService {
         return THINK_BLOCK_PATTERN.matcher(StringUtils.defaultString(content)).replaceAll("").trim();
     }
 
-    /**
-     * 描述：脱敏展示 API Key，便于排查配置是否生效但避免泄露完整密钥。
-     *
-     * @author wangjw
-     * @date 2026-04-24
-     */
     private String maskApiKey(String apiKey) {
         String value = StringUtils.trimToEmpty(apiKey);
+        if (StringUtils.isBlank(value)) {
+            return "<empty>";
+        }
+        if (value.startsWith("${")) {
+            return "<unresolved-placeholder>";
+        }
         if (value.length() <= 10) {
             return "***";
         }
         return value.substring(0, 6) + "***" + value.substring(value.length() - 4);
+    }
+
+    private boolean isApiKeyMissing(String apiKey) {
+        String value = StringUtils.trimToEmpty(apiKey);
+        return StringUtils.isBlank(value) || value.startsWith("${");
     }
 
     private Optional<String> normalizeMessageRole(String role) {

@@ -10,7 +10,7 @@ wecom:
 
 ai:
   base-url: ${AI_BASE_URL:https://api.minimaxi.com/v1/chat/completions}
-  api-key: ${AI_API_KEY}
+  api-key: ${AI_API_KEY:}
   model: ${AI_MODEL:MiniMax-M2.7}
   minimal-test-mode: ${AI_MINIMAL_TEST_MODE:false}
 
@@ -27,11 +27,6 @@ spring:
       database: ${SPRING_DATA_REDIS_DATABASE:0}
       password: ${SPRING_DATA_REDIS_PASSWORD:}
       timeout: ${SPRING_DATA_REDIS_TIMEOUT:3s}
-  sql:
-    init:
-      mode: ${SPRING_SQL_INIT_MODE:always}
-      schema-locations: classpath:db/schema-mysql.sql
-      continue-on-error: false
 
 persistence:
   jdbc:

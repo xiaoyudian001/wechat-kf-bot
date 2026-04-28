@@ -7,7 +7,7 @@ wecom:
 
 ai:
   base-url: https://api.minimaxi.com/v1/chat/completions
-  api-key: sk-cp-cKTsiPpPAHtfhVlGpr1Mg434DoP4PYyZeHyFcrW0YlJplnd_klCFHTDJQeNnxyjFByjRy2GkqEnxNpS1QLENRNd1AH4wCNfg4Q-VQEBZfb6bapNpmm3jQrA
+  api-key: ${AI_API_KEY:}
   model: MiniMax-M2.7
   minimal-test-mode: false
 
@@ -39,11 +39,6 @@ spring:
       port: 6379
       database: 0
       timeout: 3s
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:db/schema-mysql.sql
-      continue-on-error: false
 
 logging:
   level:
