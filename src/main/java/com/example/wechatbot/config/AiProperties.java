@@ -16,6 +16,7 @@ public class AiProperties {
     private String baseUrl;
     private String apiKey;
     private String model;
+    private boolean minimalTestMode;
     private String systemPrompt;
     private String faqPath;
     private String faqJsonPath;

@@ -15,4 +15,18 @@ public class HttpClientProperties {
 
     private int connectTimeoutMs = 3000;
     private int readTimeoutMs = 10000;
+    private Proxy proxy = new Proxy();
+
+    @Data
+    /**
+     * 描述：承载 HTTP 代理配置。
+     *
+     * @author wangjw
+     * @date 2026-04-24
+     */
+    public static class Proxy {
+        private boolean enabled = false;
+        private String host;
+        private int port;
+    }
 }

@@ -1,11 +1,13 @@
 package com.example.wechatbot.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 /**
  * 描述：封装 OpenAI 兼容聊天补全请求。
  *

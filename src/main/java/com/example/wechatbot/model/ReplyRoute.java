@@ -7,10 +7,10 @@ package com.example.wechatbot.model;
  * @date 2026-04-24
  */
 public enum ReplyRoute {
-    SENSITIVE_HANDOFF,
-    ORDER_INFO_REQUIRED,
-    ORDER_PENDING,
-    FAQ_MATCH,
-    AI_REPLY,
-    FALLBACK_HANDOFF
+    SENSITIVE_HANDOFF,    // 敏感词转人工
+    ORDER_INFO_REQUIRED,  // 需要订单信息
+    ORDER_PENDING,        // 订单待处理
+    FAQ_MATCH,            // 常见问题匹配
+    AI_REPLY,             // AI自动回复
+    FALLBACK_HANDOFF      // 默认转人工
 }

@@ -9,9 +9,10 @@ wecom:
   kf-account-id: ${WECOM_KF_ACCOUNT_ID}
 
 ai:
-  base-url: ${AI_BASE_URL:https://api.minimax.io/v1/chat/completions}
+  base-url: ${AI_BASE_URL:https://api.minimaxi.com/v1/chat/completions}
   api-key: ${AI_API_KEY}
   model: ${AI_MODEL:MiniMax-M2.7}
+  minimal-test-mode: ${AI_MINIMAL_TEST_MODE:false}
 
 spring:
   datasource:

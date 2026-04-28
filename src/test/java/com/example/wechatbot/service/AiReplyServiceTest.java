@@ -115,6 +115,22 @@ class AiReplyServiceTest {
     }
 
     @Test
+    void shouldRemoveThinkBlockFromAiReply() {
+        when(faqMatchService.match("hello")).thenReturn(Optional.empty());
+        when(knowledgeService.getFaqContent()).thenReturn("");
+        when(restTemplate.postForObject(
+                eq(aiProperties.getBaseUrl()),
+                any(),
+                eq(OpenAiChatResponse.class)
+        )).thenReturn(chatResponse("<think>hidden reasoning</think>\n\nfinal answer"));
+
+        ReplyDecision decision = aiReplyService.generateReply("user-1", "hello");
+
+        assertThat(decision.getRoute()).isEqualTo(ReplyRoute.AI_REPLY);
+        assertThat(decision.getReply()).isEqualTo("final answer");
+    }
+
+    @Test
     void shouldFallbackToHandoffWhenAiCallFails() {
         when(faqMatchService.match("附近有什么吃的？")).thenReturn(Optional.empty());
         when(knowledgeService.getFaqContent()).thenReturn("附近有本地餐馆。");

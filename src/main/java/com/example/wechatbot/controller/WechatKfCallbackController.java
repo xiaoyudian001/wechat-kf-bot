@@ -109,10 +109,9 @@ public class WechatKfCallbackController {
                 return "success";
             }
 
-            conversationMemoryService.addUserMessage(externalUserId, userText);
-
             ReplyDecision decision = aiReplyService.generateReply(externalUserId, userText);
             kfMessageService.sendText(externalUserId, decision.getReply());
+            conversationMemoryService.addUserMessage(externalUserId, userText);
             conversationMemoryService.addAssistantMessage(externalUserId, decision.getReply(), decision.getRoute());
             callbackIdempotencyService.markProcessed(msgSignature, timestamp, nonce, requestBody, externalUserId);
             chatLogService.logReply(externalUserId, userText, decision.getRoute(), decision.getReply());

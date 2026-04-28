@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.time.Duration;
 
 @Configuration
@@ -35,6 +37,15 @@ public class AppConfig {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofMillis(httpClientProperties.getConnectTimeoutMs()));
         factory.setReadTimeout(Duration.ofMillis(httpClientProperties.getReadTimeoutMs()));
+        if (httpClientProperties.getProxy().isEnabled()) {
+            factory.setProxy(new Proxy(
+                    Proxy.Type.HTTP,
+                    new InetSocketAddress(
+                            httpClientProperties.getProxy().getHost(),
+                            httpClientProperties.getProxy().getPort()
+                    )
+            ));
+        }
         return new RestTemplate(factory);
     }
 
