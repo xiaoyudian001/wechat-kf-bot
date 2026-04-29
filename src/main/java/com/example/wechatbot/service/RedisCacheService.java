@@ -96,6 +96,30 @@ public class RedisCacheService {
     }
 
     /**
+     * 描述：回调处理成功后保留去重标记（保留到 TTL 到期）。
+     *
+     * @author wangjw
+     * @date 2026-04-29
+     */
+    public void keepCallbackMarker(String dedupeKey) {
+        // no-op，SETNX 时已设置好 TTL，这里保留方法用于语义对齐
+    }
+
+    /**
+     * 描述：回调处理失败后释放去重标记，允许上游重试。
+     *
+     * @author wangjw
+     * @date 2026-04-29
+     */
+    public void releaseCallbackMarker(String dedupeKey) {
+        try {
+            redisTemplate.delete(key("callback:dedupe:" + dedupeKey));
+        } catch (Exception e) {
+            log.warn("redis_release_callback_marker_failed dedupeKey={}", dedupeKey, e);
+        }
+    }
+
+    /**
      * 描述：追加一条最近会话消息到 Redis。
      *
      * @author wangjw

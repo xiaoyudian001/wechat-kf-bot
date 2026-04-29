@@ -49,12 +49,12 @@ public class CallbackIdempotencyService {
      */
     public boolean isDuplicate(String msgSignature, String timestamp, String nonce, String requestBody) {
         String key = buildKey(msgSignature, timestamp, nonce, requestBody);
-        if (redisCacheService != null && !redisCacheService.markCallbackIfAbsent(key)) {
-            return true;
-        }
         if (persistentCallbackEventService != null) {
             return persistentCallbackEventService.tryBeginProcessing(key, buildTraceId(msgSignature, timestamp, nonce, requestBody),
                     msgSignature, nonce, timestamp);
+        }
+        if (redisCacheService != null && !redisCacheService.markCallbackIfAbsent(key)) {
+            return true;
         }
         return processedCallbacks.asMap().putIfAbsent(key, Boolean.TRUE) != null;
     }
@@ -67,13 +67,34 @@ public class CallbackIdempotencyService {
      */
     public void markProcessed(String msgSignature, String timestamp, String nonce,
                               String requestBody, String externalUserId) {
-        if (persistentCallbackEventService == null) {
-            return;
-        }
-
         String key = buildKey(msgSignature, timestamp, nonce, requestBody);
         String traceId = buildTraceId(msgSignature, timestamp, nonce, requestBody);
-        persistentCallbackEventService.markProcessed(key, traceId, externalUserId);
+        if (persistentCallbackEventService != null) {
+            persistentCallbackEventService.markProcessed(key, traceId, externalUserId);
+            return;
+        }
+        if (redisCacheService != null) {
+            redisCacheService.keepCallbackMarker(key);
+            return;
+        }
+        processedCallbacks.put(key, Boolean.TRUE);
+    }
+
+    /**
+     * 描述：处理失败时释放幂等占位，允许上游重试。
+     *
+     * @author wangjw
+     * @date 2026-04-29
+     */
+    public void markFailed(String msgSignature, String timestamp, String nonce, String requestBody) {
+        String key = buildKey(msgSignature, timestamp, nonce, requestBody);
+        if (persistentCallbackEventService != null) {
+            persistentCallbackEventService.markFailed(key);
+        }
+        if (redisCacheService != null) {
+            redisCacheService.releaseCallbackMarker(key);
+        }
+        processedCallbacks.invalidate(key);
     }
 
     /**

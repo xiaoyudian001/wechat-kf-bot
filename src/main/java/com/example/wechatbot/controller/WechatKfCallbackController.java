@@ -118,7 +118,8 @@ public class WechatKfCallbackController {
             return "success";
         } catch (Exception e) {
             chatLogService.logError(externalUserId, userText, e);
-            return "success";
+            callbackIdempotencyService.markFailed(msgSignature, timestamp, nonce, requestBody);
+            return "failed";
         } finally {
             MDC.remove("traceId");
         }

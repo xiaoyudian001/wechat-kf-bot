@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -119,11 +120,13 @@ public class ConversationMemoryService {
      * @date 2026-04-24
      */
     private void addInMemoryMessage(String userId, String role, String content) {
-        Deque<ChatMessage> deque = memory.computeIfAbsent(userId, key -> new ArrayDeque<>());
-        if (deque.size() >= MAX_MESSAGES) {
-            deque.pollFirst();
+        Deque<ChatMessage> deque = memory.computeIfAbsent(userId, key -> new ConcurrentLinkedDeque<>());
+        synchronized (deque) {
+            while (deque.size() >= MAX_MESSAGES) {
+                deque.pollFirst();
+            }
+            deque.offerLast(new ChatMessage(role, content));
         }
-        deque.offerLast(new ChatMessage(role, content));
     }
 
     /**
