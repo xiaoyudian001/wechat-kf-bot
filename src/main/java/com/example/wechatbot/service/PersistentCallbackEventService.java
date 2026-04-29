@@ -33,10 +33,6 @@ public class PersistentCallbackEventService {
      */
     public boolean tryBeginProcessing(String dedupeKey, String traceId,
                                       String msgSignature, String nonce, String timestampValue) {
-        if (callbackEventRepository.findByDedupeKey(dedupeKey).isPresent()) {
-            return true;
-        }
-
         CallbackEventEntity entity = new CallbackEventEntity();
         entity.setDedupeKey(dedupeKey);
         entity.setTraceId(traceId);
@@ -45,8 +41,7 @@ public class PersistentCallbackEventService {
         entity.setTimestampValue(timestampValue);
         entity.setProcessed(false);
         entity.setCreatedAt(LocalDateTime.now());
-        callbackEventRepository.save(entity);
-        return false;
+        return !callbackEventRepository.tryInsertProcessing(entity);
     }
 
     /**
@@ -57,5 +52,15 @@ public class PersistentCallbackEventService {
      */
     public void markProcessed(String dedupeKey, String traceId, String externalUserId) {
         callbackEventRepository.markProcessed(dedupeKey, traceId, externalUserId);
+    }
+
+    /**
+     * 描述：处理失败时回滚未完成占位，允许后续重试。
+     *
+     * @author wangjw
+     * @date 2026-04-29
+     */
+    public void markFailed(String dedupeKey) {
+        callbackEventRepository.deleteUnprocessed(dedupeKey);
     }
 }

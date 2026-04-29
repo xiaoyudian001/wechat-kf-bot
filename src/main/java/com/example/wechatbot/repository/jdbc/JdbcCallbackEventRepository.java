@@ -57,6 +57,64 @@ public class JdbcCallbackEventRepository implements CallbackEventRepository {
      * @author wangjw
      * @date 2026-04-24
      */
+    public boolean tryInsertProcessing(CallbackEventEntity entity) {
+        try {
+            int affectedRows = jdbcTemplate.update("""
+                            INSERT IGNORE INTO wecom_callback_event (
+                                dedupe_key, trace_id, external_user_id, msg_signature, nonce,
+                                timestamp_value, processed, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                    entity.getDedupeKey(),
+                    entity.getTraceId(),
+                    entity.getExternalUserId(),
+                    entity.getMsgSignature(),
+                    entity.getNonce(),
+                    entity.getTimestampValue(),
+                    entity.isProcessed(),
+                    Timestamp.valueOf(entity.getCreatedAt()));
+            return affectedRows > 0;
+        } catch (DataAccessException e) {
+            log.error("try_insert_callback_event_failed dedupeKey={}, traceId={}",
+                    entity.getDedupeKey(), entity.getTraceId(), e);
+            throw new IllegalStateException("failed to reserve callback event", e);
+        }
+    }
+
+    @Override
+    public void markProcessed(String dedupeKey, String traceId, String externalUserId) {
+        try {
+            jdbcTemplate.update("""
+                            UPDATE wecom_callback_event
+                            SET trace_id = ?, external_user_id = ?, processed = 1
+                            WHERE dedupe_key = ?
+                            """,
+                    traceId,
+                    externalUserId,
+                    dedupeKey
+            );
+        } catch (DataAccessException e) {
+            log.error("mark_callback_event_processed_failed dedupeKey={}, traceId={}", dedupeKey, traceId, e);
+            throw new IllegalStateException("failed to mark callback event processed", e);
+        }
+    }
+
+    @Override
+    public void deleteUnprocessed(String dedupeKey) {
+        try {
+            jdbcTemplate.update("""
+                            DELETE FROM wecom_callback_event
+                            WHERE dedupe_key = ? AND processed = 0
+                            """,
+                    dedupeKey
+            );
+        } catch (DataAccessException e) {
+            log.error("delete_unprocessed_callback_event_failed dedupeKey={}", dedupeKey, e);
+            throw new IllegalStateException("failed to delete unprocessed callback event", e);
+        }
+    }
+
+    @Override
     public Optional<CallbackEventEntity> findByDedupeKey(String dedupeKey) {
         try {
             return jdbcTemplate.query("""
@@ -75,57 +133,4 @@ public class JdbcCallbackEventRepository implements CallbackEventRepository {
         }
     }
 
-    @Override
-    /**
-     * 描述：保存一条回调事件记录。
-     *
-     * @author wangjw
-     * @date 2026-04-24
-     */
-    public void save(CallbackEventEntity entity) {
-        try {
-            jdbcTemplate.update("""
-                            INSERT INTO wecom_callback_event (
-                                dedupe_key, trace_id, external_user_id, msg_signature, nonce,
-                                timestamp_value, processed, created_at
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                            """,
-                    entity.getDedupeKey(),
-                    entity.getTraceId(),
-                    entity.getExternalUserId(),
-                    entity.getMsgSignature(),
-                    entity.getNonce(),
-                    entity.getTimestampValue(),
-                    entity.isProcessed(),
-                    Timestamp.valueOf(entity.getCreatedAt()));
-        } catch (DataAccessException e) {
-            log.error("save_callback_event_failed dedupeKey={}, traceId={}",
-                    entity.getDedupeKey(), entity.getTraceId(), e);
-            throw new IllegalStateException("failed to save callback event", e);
-        }
-    }
-
-    @Override
-    /**
-     * 描述：更新回调事件为已处理状态。
-     *
-     * @author wangjw
-     * @date 2026-04-24
-     */
-    public void markProcessed(String dedupeKey, String traceId, String externalUserId) {
-        try {
-            jdbcTemplate.update("""
-                            UPDATE wecom_callback_event
-                            SET trace_id = ?, external_user_id = ?, processed = 1
-                            WHERE dedupe_key = ?
-                            """,
-                    traceId,
-                    externalUserId,
-                    dedupeKey
-            );
-        } catch (DataAccessException e) {
-            log.error("mark_callback_event_processed_failed dedupeKey={}, traceId={}", dedupeKey, traceId, e);
-            throw new IllegalStateException("failed to mark callback event processed", e);
-        }
-    }
 }

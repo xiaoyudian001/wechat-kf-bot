@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_DIR" value="F:/project"/>
+    <property name="LOG_DIR" value="${LOG_DIR:-./logs}"/>
     <property name="APP_LOG_FILE" value="${LOG_DIR}/wechat-kf-bot.log"/>
     <property name="AI_LOG_FILE" value="${LOG_DIR}/ai-model-debug.log"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} traceId:%X{traceId:-} %-5level [%thread] %logger{40} - %msg%n"/>
