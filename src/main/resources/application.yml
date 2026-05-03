@@ -1,10 +1,6 @@
 server:
   port: 8080
 
-spring:
-  profiles:
-    active: dev
-
 wecom:
   corp-id: your_corp_id
   token: your_callback_token
